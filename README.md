@@ -1,105 +1,105 @@
-Projeto AtlasPulse - Nível 13
-=============================
+Projeto usewa - Nível 13
+========================
 
 Resumo
 ------
-O projeto AtlasPulse marca a transição para uma arquitetura de microserviços com Traefik SAFE, mantendo polish visual elevado e estrutura completa de produção. 
-Foi o primeiro projeto da linha com Traefik configurado corretamente sem uso de portas 80/443, com entrypoints seguros e provider.docker habilitado. 
-Toda a aplicação é composta por múltiplos serviços independentes, integrados via reverse proxy, com front-end funcional e moderno.
+O projeto usewa marca a adoção de arquitetura de microserviços com Traefik SAFE, mantendo polish visual elevado e estrutura pronta para produção. 
+Este nível 13 NÃO inclui autenticação JWT completa; as rotas de dados permanecem abertas ou com validação mínima. 
+É a base direta para o nível 14 (TOT), que adiciona a autenticação JWT com refresh token.
 
 Arquitetura
-------------
+-----------
 - Microserviços:
-  - auth-service: controle básico de autenticação (mock/simulado)
+  - auth-service: endpoints básicos/placeholder de autenticação (sem JWT completo)
   - catalog-service: catálogo de produtos
-  - orders-service: pedidos
-  - notifications-service: eventos e websocket
-  - web: dashboard front-end
+  - orders-service: criação/listagem simples de pedidos
+  - notifications-service: simulação de eventos/websocket
+  - web: front-end (React + Vite)
+- Infra: Traefik SAFE como reverse proxy, sem uso de portas 80/443
 - Banco: PostgreSQL com healthcheck
-- Proxy reverso: Traefik SAFE
-- Todos os containers na mesma rede Docker
+- Cache/mensageria: Redis (opcional, para simulações)
+- Todos os serviços na mesma rede Docker
 - build.context correto em todos os serviços
-- Sem uso de api.insecure
+- provider.docker habilitado e api.insecure desabilitado em produção
 
 Traefik SAFE
 ------------
-- Entrypoints definidos:
+- Entrypoints:
   - web = :8880
   - websecure = :8443
+- Roteamento por PathPrefix para cada serviço
+- server.port declarado em cada container atrás do Traefik
 - provider.docker = true
-- Rotas definidas por PathPrefix por serviço
-- Cada container declara explicitamente seu server.port
-- Todos os serviços acessíveis via http://localhost:8880/<serviço>/
-- Estrutura de rede compartilhada "appnet" entre todos os containers
+- Todo o tráfego passa pelos entrypoints definidos, sem expor 80/443
 
 Banco e Infraestrutura
 ----------------------
-- PostgreSQL configurado com healthcheck e dependência explícita
-- Persistência de dados simulada para catálogo e pedidos
-- Redis opcional para cache e simulação de mensagens
-- Docker Compose unificado em infra/docker-compose.yml
+- PostgreSQL (com healthcheck) e dependência explícita antes dos serviços
+- Redis para simulações de cache e eventos
+- Docker Compose único: infra/docker-compose.yml
+- Healthchecks para facilitar a orquestração de subida
 
 Front-end
-----------
-- Aplicação web construída com React + Vite
-- TailwindCSS e componentes reutilizáveis
-- UI moderna, escura e funcional
-- Dashboard com resumo de pedidos, produtos e usuários
-- Layout polido e responsivo
+---------
+- Stack: React + Vite
+- UI moderna e funcional (TailwindCSS), layout responsivo
+- Dashboard com listagem de produtos e pedidos
 - Rotas principais:
-  - /app → dashboard
-  - /catalog → listagem de produtos
-  - /orders → pedidos recentes
-- Comunicação real entre front e back-end via Traefik
-- Testado com smoke test end-to-end
+  - /app (dashboard)
+  - /catalog (listagem)
+  - /orders (histórico)
+- Comunicação com os microserviços através do Traefik
 
 Execução local
----------------
-1. Criar .env a partir do exemplo:
+--------------
+1) Criar o arquivo .env a partir do exemplo:
    cp .env.example .env
-2. Build completo:
+
+2) Build e subida das bases:
    docker compose -f infra/docker-compose.yml build
-3. Subir os serviços base:
    docker compose -f infra/docker-compose.yml up -d traefik postgres redis
-4. Subir os microserviços:
+
+3) Subir os microserviços:
    docker compose -f infra/docker-compose.yml up -d auth-service catalog-service orders-service notifications-service web
-5. Verificar healths:
+
+4) Verificar healths:
    curl -s http://localhost:8880/auth/health && echo
    curl -s http://localhost:8880/catalog/health && echo
    curl -s http://localhost:8880/orders/health && echo
    curl -s http://localhost:8880/ws/health && echo
-6. Abrir no navegador:
+
+5) Acessar no navegador:
    http://localhost:8880/app
 
 Smoke tests
-------------
-Testes rápidos de funcionamento:
-- Serviços respondendo 200 em /health
-- Catálogo retornando lista de produtos
-- Dashboard carregando dados via Traefik
-- Layout e navegação entre seções funcionando
+-----------
+- Todos os /health respondendo 200
+- Dashboard carrega listagem do catálogo
+- Pedidos podem ser criados/listados (sem autenticação JWT)
+- Navegação entre seções funcionando via Traefik
 
 Deploy
 ------
-A aplicação pode ser publicada em VPS ou plataforma pública (Render, Railway, etc).
-O Traefik SAFE garante isolamento das portas padrão, utilizando apenas 8880 e 8443.
+- Publicável em VPS ou PaaS (Render/Railway/etc.)
+- Traefik SAFE com portas seguras 8880 e 8443
+- Sem api.insecure em produção
 
-GitHub
-------
-Para subir o projeto:
-cd ~/atlaspulse
+Git e Publicação
+----------------
+Exemplo de publicação do projeto usewa:
+cd ~/usewa
 git init
 git add .
-git commit -m "Nível 13 - Projeto AtlasPulse com Traefik SAFE e Microserviços"
+git commit -m "Nível 13 - Projeto usewa com Traefik SAFE e microserviços"
 git branch -M main
-git remote add origin https://github.com/iangama/atlaspulse.git
+git remote add origin https://github.com/iangama/usewa.git
 git push -u origin main
-Ao pedir credenciais:
+Quando solicitado:
 Username: iangama
 Password: (cole seu Personal Access Token Classic)
 
 Classificação
---------------
+-------------
 Nível 13 - Projeto intermediário-avançado.
-Primeiro projeto com arquitetura de produção segura, Traefik SAFE, rede unificada e front-end polido.
-Serviu de base direta para o nível 14 (TOT), que adicionou autenticação JWT completa.
+Arquitetura de produção com Traefik SAFE, microserviços e front-end polido.
+Serviu como base para o nível 14 (TOT) que adiciona autenticação JWT completa com refresh token.
